@@ -1,6 +1,8 @@
 finger\jetty\web\FingerController.class
 finger\jetty\AppConfig.class
 finger\jetty\CustomApplication.class
+finger\jetty\MyTrayIcon.class
+finger\jetty\MyTrayIcon$1.class
 finger\jetty\service\HelloWorldService.class
 finger\jetty\service\FingerService.class
 finger\jetty\web\SampleController.class

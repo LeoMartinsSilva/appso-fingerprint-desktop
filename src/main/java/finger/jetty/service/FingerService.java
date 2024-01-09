@@ -112,8 +112,9 @@ public class FingerService {
 			return ResponseEntity.status(412).build(); // 412: pre-condition failed
 		}
 		
+		
 		for (Biometria biometria : biometrias) {
-			salvarBiometria(biometria);
+			ret = salvarBiometria(biometria);
 		}
 
 		CIDBio.Terminate();
