@@ -15,6 +15,7 @@ import CIDBio.MatchResult;
 import CIDBio.RetCode;
 import CIDBio.Template;
 import finger.jetty.models.Biometria;
+import finger.jetty.models.Funcionario;
 
 @Component
 public class FingerService {
@@ -53,78 +54,85 @@ public class FingerService {
 		return ResponseEntity.ok(biometria);
 	}
 
-	public ResponseEntity<Biometria> identificar() {
+	public Funcionario identificar() {
 
 		IdentifyResult idResult = bio.CaptureAndIdentify();
 
 		this.ret = idResult.getRetCode();
 
-		if (isAparelhoDesconectado()) {
-			return ResponseEntity.status(412).build(); // 412: pre-condition failed
-		}
+		Funcionario funcionario = new Funcionario();
+		if(idResult.getId()>0) {
+	        String codigo = String.valueOf(idResult.getId());
+	        int tipcol = Integer.valueOf(codigo.substring(0,1));
+	        int numcad = Integer.valueOf(codigo.substring(2));
 
-		Biometria biometria = new Biometria();
-		biometria.setNumcad((int) idResult.getId());
+	        funcionario.setTipcol(tipcol);
+	        funcionario.setNumcad(numcad);
+
+		}
 
 		CIDBio.Terminate();
 
-		return ResponseEntity.ok(biometria);
+		return funcionario;
 	}
 	
-	public ResponseEntity<Map<String, Object>> comparar(int numcad){
+	public boolean comparar(int tipcol, int numcad){
 		
-		MatchResult matchResult =  bio.CaptureAndMatch(numcad);
+		IdentifyResult idResult = bio.CaptureAndIdentify();
+		if(idResult.getId()==0) {
+			return false;
+		}
+        String codigo = String.valueOf(idResult.getId());
+        int tipcolResult = Integer.valueOf(codigo.substring(0,1));
+        int numcadResult = Integer.valueOf(codigo.substring(2));
 		
-		ret = matchResult.getRetCode();
+        return tipcolResult == tipcol && numcadResult == numcad;
 
-		if (isAparelhoDesconectado()) {
-			return ResponseEntity.status(412).build(); // 412: pre-condition failed
-		}
-		if(ret == RetCode.SUCCESS) {
-			return ResponseEntity.ok(Collections.singletonMap("success", true));
-		}else {
-			return ResponseEntity.ok(Collections.singletonMap("success", false));
-		}
+		
 	}
 
-	public ResponseEntity<Biometria> salvarNoLeitor(Biometria biometria) {
-
-		ret = salvarBiometria(biometria);
-		
-		if (isAparelhoDesconectado()) {
-			return ResponseEntity.status(412).build(); // 412: pre-condition failed
+	public void salvarNoLeitor(Funcionario funcionario) throws Exception {
+		deletarBiometrias(funcionario);
+		for(Biometria digital: funcionario.getDigitais()) {
+			ret = salvarBiometria(funcionario, digital);
 		}
 
 		CIDBio.Terminate();
 
 		if (ret == RetCode.SUCCESS) {
-			return new ResponseEntity<Biometria>(biometria, HttpStatus.CREATED);
+			return;
 		}
-		return new ResponseEntity<Biometria>(biometria, HttpStatus.BAD_REQUEST);
+		throw new Exception("Erro ao inserir");
 
 	}
+	
+	private void deletarBiometrias(Funcionario funcionario) {
+		for(int i=1; i<10; i++) {
+			String codigo = funcionario.getTipcol()+String.valueOf(i)+funcionario.getNumcad();
+			bio.DeleteTemplate(Long.valueOf(codigo));
+		}
+	}
 
-	public ResponseEntity<Biometria> popularLeitor(List<Biometria> biometrias) {
+	public void popularLeitor(List<Funcionario> funcionarios) {
 
 		ret = deletarBiometrias();
 		
-		if (isAparelhoDesconectado()) {
-			return ResponseEntity.status(412).build(); // 412: pre-condition failed
-		}
-		
-		
-		for (Biometria biometria : biometrias) {
-			ret = salvarBiometria(biometria);
-		}
+		for(Funcionario funcionario: funcionarios){
+            for(Biometria digital: funcionario.getDigitais()){
+            	salvarBiometria(funcionario, digital);
+            }
 
+        }
+		
 		CIDBio.Terminate();
 
-		Biometria biometria = new Biometria();
-		return new ResponseEntity<Biometria>(biometria, HttpStatus.CREATED);
 	}
 
-	private RetCode salvarBiometria(Biometria biometria) {
-		RetCode ret = bio.SaveTemplate(biometria.getNumcad(), biometria.getDigital());
+	private RetCode salvarBiometria(Funcionario funcionario, Biometria digital) {
+		
+		String codigo = String.valueOf(funcionario.getTipcol())+String.valueOf(digital.getTiptem())+String.valueOf(funcionario.getNumcad());
+        
+		RetCode ret = bio.SaveTemplate(Integer.valueOf(codigo), digital.getDigital());
 		return ret;
 	}
 

@@ -23,7 +23,13 @@ public class AppConfig {
     @Bean
     public CorsConfigurationSource corsConfiguration() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8080", "http://10.1.4.220:4000", "http://10.1.4.220:3000"));
+        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:3000",
+        		"http://refeicao.localhost:3000", 
+        		"http://localhost:8080", 
+        		"http://refeicao.localhost:8080", 
+        		"http://10.1.4.220:4000", 
+        		"http://10.1.4.220:3000",
+        		"http://refeicao.tsaquimica.com.br"));
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         corsConfig.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "Pragma", "Cache-Control"));
         corsConfig.setExposedHeaders(Arrays.asList("X-Custom-Header"));

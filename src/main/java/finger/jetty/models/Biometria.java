@@ -13,16 +13,16 @@ public class Biometria implements Serializable {
 	@JsonProperty("digital")
 	private String digital;
 	
-	@JsonProperty("numcad")
-	private int numcad;
+	@JsonProperty("tiptem")
+	private int tiptem;
 	
 	public Biometria() {
 		
 	}
 	
-	public Biometria(String digital, int numcad) {
+	public Biometria(String digital, int tiptem) {
 		this.digital = digital;
-		this.numcad = numcad;
+		this.tiptem = tiptem;
 	}
 
 
@@ -32,11 +32,11 @@ public class Biometria implements Serializable {
 	public void setDigital(String digital) {
 		this.digital = digital;
 	}
-	public int getNumcad() {
-		return numcad;
+	public int getTiptem() {
+		return tiptem;
 	}
-	public void setNumcad(int numcad) {
-		this.numcad = numcad;
+	public void setTiptem(int tiptem) {
+		this.tiptem = tiptem;
 	}
 
 }
